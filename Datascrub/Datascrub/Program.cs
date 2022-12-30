@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using Newtonsoft.Json;
 using System.Linq;
+using System.Text;
 
 namespace Datascrub
 {
@@ -8,13 +9,52 @@ namespace Datascrub
     {
         static void Main(string[] args)
         {
-            string root = @"C:\Users\mradt\source\repos\Trinity\Machine Learning\machine-learning-final-assignment";
+            string root = @"C:\Users\Matt\source\repos\Trinity\Machine Learning\machine-learning-final-assignment";
             var listings = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Listing>>(File.ReadAllText(root + @"\listings.json"));
             var reviews = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Review>>(File.ReadAllText(root + @"\reviews.json"));
 
-            var scrubbed = reviews.Select(x => new Scrubbed(x)).ToList();
+
+            var scrubbed = reviews.Select(x => new ScrubbedReview(x)).ToList();
+            ReviewsToCSV(scrubbed, root);
+
+            // Only get listings thathave review data we care about
+            var listingIds = scrubbed.Select(x => x.listing_id).Distinct().ToList();
+            listings = listings.Where(x => listingIds.Contains(x.id)).ToList();
+
+
+            var sListings = listings.Select(x => new ScrubbedListing(x)).ToList();
+            ListingsToCSV(sListings, root, "scrubbed-listings.csv");
             //ToJson();
         }
+
+        public static void ListingsToCSV(List<ScrubbedListing>listings, string filePath, string name)
+        {
+            StringBuilder str = new StringBuilder();
+            // Header line
+            string header = ScrubbedListing.GetHeaders();
+            str.AppendLine(header);
+            foreach (var listing in listings)
+            {
+                string line = listing.Values();
+                str.AppendLine(line);
+            }
+
+            File.WriteAllText(Path.Combine(filePath, name), str.ToString());
+        }
+
+        public static void ReviewsToCSV(List<ScrubbedReview> reviews, string filePath, string name = "scrubbed-reviews.csv")
+        {
+            StringBuilder str = new StringBuilder();
+            // Header line
+            str.AppendLine("listing_id,id,reviewer_id,comments");
+            foreach(var review in reviews)
+            {
+                string line = review.ToString();
+                str.AppendLine(line);
+            }
+
+            File.WriteAllText(Path.Combine(filePath,name), str.ToString());
+        } 
 
         public static void ToJson()
         {
@@ -62,6 +102,7 @@ namespace Datascrub
 
             return JsonConvert.SerializeObject(listObjResult);
         }
+
 
     }
 }
