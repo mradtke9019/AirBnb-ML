@@ -140,8 +140,14 @@ namespace Datascrub
             number_of_reviews_l30d = l.number_of_reviews_l30d;
             number_of_reviews_ltm = l.number_of_reviews_ltm;
 
-            years_since_first_review = (DateTime.Now - DateTime.Parse(l.first_review)).Days / 365.0;
-            years_since_last_review = (DateTime.Now - DateTime.Parse(l.last_review)).Days / 365.0;
+            if (l.first_review != "")
+                years_since_first_review = (DateTime.Now - DateTime.Parse(l.first_review)).Days / 365.0;
+            else
+                years_since_first_review = 0;
+            if (l.last_review != "")
+                years_since_last_review = (DateTime.Now - DateTime.Parse(l.last_review)).Days / 365.0;
+            else
+                years_since_last_review = 0;
             review_scores_rating = l.review_scores_rating;
             review_scores_accuracy = l.review_scores_accuracy;
             review_scores_cleanliness = l.review_scores_cleanliness;
